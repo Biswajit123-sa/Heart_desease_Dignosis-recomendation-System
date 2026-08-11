@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.log
+logs/
+data/raw/*
+!data/raw/.gitkeep
+data/knowledge_base/chroma_db/
+ml_models/trained/*.joblib
+.DS_Store
+.pytest_cache/
+.ipynb_checkpoints/
