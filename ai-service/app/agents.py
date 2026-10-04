@@ -1,4 +1,5 @@
 import json
+import re
 from google import genai as google_genai
 from google.genai import types as genai_types
 from groq import Groq
@@ -28,19 +29,33 @@ class AgentState(TypedDict, total=False):
     final_report: dict
     errors: list[str]
 
-# --- LLM Helpers: Groq (risk analysis, RAG, recommendations) ---
+def _strip_think_tags(text: str) -> str:
+    """Remove <think>...</think> blocks produced by reasoning models (e.g. Qwen)."""
+    return re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+
+
 def generate_groq_text(prompt: str, temperature: float = 0.4, model: str | None = None) -> str:
     chosen_model = model or settings.GROQ_MODEL
     logger.info(f"[LLM:Groq] Calling model '{chosen_model}'...")
     if not settings.GROQ_API_KEY:
         raise ValueError("GROQ_API_KEY not configured.")
     client = Groq(api_key=settings.GROQ_API_KEY)
+
+    # Build kwargs — Qwen requires reasoning_effort="none" to suppress <think> blocks
+    extra_kwargs: dict = {}
+    if "qwen" in chosen_model.lower():
+        extra_kwargs["reasoning_effort"] = "none"
+
     chat_completion = client.chat.completions.create(
         messages=[{"role": "user", "content": prompt}],
         model=chosen_model,
         temperature=temperature,
+        max_tokens=2048,
+        **extra_kwargs,
     )
-    return chat_completion.choices[0].message.content.strip()
+    raw = chat_completion.choices[0].message.content or ""
+    # Strip any residual <think> blocks as a safety net
+    return _strip_think_tags(raw)
 
 # --- LLM Helpers: Gemini (final report generation only) ---
 def generate_gemini_text(prompt: str, temperature: float = 0.4) -> str:

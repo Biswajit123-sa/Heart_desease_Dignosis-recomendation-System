@@ -5,6 +5,9 @@ const ChatHistory = require("../models/ChatHistory");
 const groq = new Groq({ apiKey: process.env.GROQ_CHATBOT_API_KEY });
 const model = process.env.GROQ_MODEL_CHATBOT || "llama-3.3-70b-versatile";
 
+/** Strip <think>...</think> blocks emitted by reasoning models (e.g. Qwen). */
+const stripThinkTags = (text) => text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
 /**
  * @desc    Process follow up chat with the AI model
  * @route   POST /api/chat
@@ -54,9 +57,10 @@ const postChat = async (req, res) => {
       messages: messages,
       model: model,
       temperature: 0.4,
+      max_tokens: 1024,
     });
 
-    const responseText = chatCompletion.choices[0].message.content.trim();
+    const responseText = stripThinkTags(chatCompletion.choices[0].message.content || "");
 
     // 5. Save the assistant's reply
     const assistantMsg = { role: "assistant", content: responseText };

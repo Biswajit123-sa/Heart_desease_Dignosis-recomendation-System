@@ -14,7 +14,7 @@ class Settings(BaseSettings):
 
     # --- Gemini ---
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-3.7-flash"
 
 
     # --- MongoDB ---
@@ -30,10 +30,10 @@ class Settings(BaseSettings):
     LLM_PROVIDER: str = "groq"
     GROQ_API_KEY: str = ""
     # Default / fallback model
-    GROQ_MODEL: str = "llama-3.1-8b-instant"
+    GROQ_MODEL: str = "llama-3.3-70b-versatile"
     # Agent-specific models
-    GROQ_MODEL_RISK: str = "llama-3.3-70b-versatile"       # deep reasoning for risk projection
-    GROQ_MODEL_RECOMMENDATION: str = "llama-3.1-8b-instant" # fast structured JSON for recs
+    GROQ_MODEL_RISK: str = "openai/gpt-oss-120b"       # deep reasoning for risk projection
+    GROQ_MODEL_RECOMMENDATION: str = "openai/gpt-oss-20b" # fast structured JSON for recs
 
     # --- ML model ---
     ML_MODEL_PATH: str = str(BASE_DIR / "ml_models" / "trained" / "heart_disease_model.joblib")
